@@ -5,10 +5,10 @@ export class ShopApi implements IApi {
     constructor(api: IApi) {
         this.api = api; // сохраняем ссылку на экземпляр API в приватное поле класса
     }
-    get<T extends object>(url: string): Promise<T> {
+    get<T extends object>(uri: string): Promise<T> {
         throw new Error("Method not implemented.");
     }
-    post<T extends object>(url: string, data: object, method?: ApiPostMethods): Promise<T> {
+    post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T> {
         throw new Error("Method not implemented.");
     }
     getProducts(): Promise<IProduct[]> {
@@ -18,4 +18,3 @@ export class ShopApi implements IApi {
         return this.api.post('/order/', order); // отправляем данные заказа на сервер
     }
     }
-    

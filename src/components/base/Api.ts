@@ -14,10 +14,12 @@ export class Api {
         };
     }
 
-    protected handleResponse<T>(response: Response): Promise<T> {
+    protected async handleResponse<T>(response: Response): Promise<T> {
         if (response.ok) return response.json();
-        else return response.json()
-            .then(data => Promise.reject(data.error ?? response.statusText));
+        else {
+            const data = await response.json();
+            return await Promise.reject(data.error ?? response.statusText);
+        }
     }
 
     get<T extends object>(uri: string) {
