@@ -3,7 +3,7 @@ import { ApiPostMethods, IApi, IOrder, IOrderResponse, IProduct } from "../../..
 export class ShopApi implements IApi {
     private api: IApi;
     constructor(api: IApi) {
-        this.api = api; // сохраняем ссылку на экземпляр API в приватное поле класса
+        this.api = api; 
     }
     get<T extends object>(uri: string): Promise<T> {
         throw new Error("Method not implemented.");
@@ -15,6 +15,6 @@ export class ShopApi implements IApi {
         return this.api.get('/product/');
     }
     createOrder(order: IOrder): Promise<IOrderResponse> {
-        return this.api.post('/order/', order); // отправляем данные заказа на сервер
+        return this.api.post('/order/', order);
     }
     }
