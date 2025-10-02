@@ -14,18 +14,6 @@ export class Buyer {
         this.address = '';
     }
     //methods
-    setPayment(payment: TPayment): void {
-        this.payment = payment;
-    }
-    setEmail(email: string): void {
-        this.email = email;
-    }
-    setPhone(phone: string): void {
-        this.phone = phone;
-    }
-    setAddress(address: string): void {
-        this.address = address;
-    }
     setData(data: Partial<IBuyer>): void {
         if (data.payment !== undefined) {
             this.payment = data.payment;
@@ -41,8 +29,11 @@ export class Buyer {
         }
     }
     getData(): IBuyer {
+        if (this.payment === null) {
+            throw new Error("Что-то пошло не так: способ оплаты не выбран");
+        }
         return {
-            payment: this.payment ?? 'card', // default to 'card' if null or undefined
+            payment: this.payment,
             email: this.email,
             phone: this.phone,
             address: this.address,

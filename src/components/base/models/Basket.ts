@@ -18,14 +18,7 @@ export class Basket {
     removeItem(item: IProduct): void {
         this.items = this.items.filter((i) => i.id !== item.id);
     }
-    //remove item by id use array.splice ?
-    // removeItemById(id: string): void {
-    //     const index = this.items.findIndex((item) => item.id === id);
-    //     if (index !== -1) {
-    //         this.items.splice(index, 1);
-    //     }
-    // }
-    
+
     clear(): void {
         this.items = [];
     }

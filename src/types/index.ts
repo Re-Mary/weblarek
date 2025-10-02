@@ -14,7 +14,7 @@ export interface IProduct {
     price: number | null;
 }
 
-export type TPayment = 'card' | 'cash';
+export type TPayment = 'card' | 'cash' | '';
 
 export interface IBuyer {
     payment: TPayment;
@@ -24,11 +24,15 @@ export interface IBuyer {
 }
 
 export interface IOrder {
-    buyer: IBuyer;
-    items: IProduct[];
+    payment: TPayment;
+    email: string;
+    phone: string;
+    address: string;
+    total: number;
+    items: string[];
 }
 
 export interface IOrderResponse {
-    orderId: string;
+    id: string;
     status: string; 
 }
