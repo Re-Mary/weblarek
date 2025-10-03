@@ -5,7 +5,7 @@ import { TPayment} from './types';
 import { Buyer } from './components/models/Buyer';
 import { apiProducts } from './utils/data';
 import { Api } from './components/base/Api';
-import { ShopApi } from './components/models/ShopApi';
+import { ShopApi } from './components/base/ShopApi';
 import { API_URL } from './utils/constants';
 
 //set Api instance
