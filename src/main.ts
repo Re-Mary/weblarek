@@ -66,12 +66,14 @@ console.log('Общая стоимость товаров в корзине: ', 
 console.log('Количество товаров в корзине: ', basketModel.getCount());
 
 //test shopApi
+console.log('Тестирование ShopApi: ', shopApi);
+//get products from server and set them to productsModel
 shopApi.getProducts()
     .then(data => {
         //get data from server and save it into Products
         console.log('Данные товаров, полученные с сервера: ', data);
-        productsModel.setItems(data);
-        console.log('Товары в модели Products после получения с сервера: ', productsModel.getItems());
+        productsModel.setItems(data); //set products to model
+        console.log('Полученные товары из модели: ', productsModel.getItems());
         //choose one mocked product and set it as selected
         const testFirstProduct = productsModel.getItemById('90973ae5-285c-4b6f-a6d0-65d1d760b102');
         const testSecondProduct = productsModel.getItemById('54df7dcb-1213-4b3c-ab61-92ed5f845535');

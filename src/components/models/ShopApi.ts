@@ -5,8 +5,9 @@ export class ShopApi {
         this.api = api; 
     }
 
-    getProducts(): Promise<IProduct[]> {
-        return this.api.get('/product/');
+    async getProducts(): Promise<IProduct[]> {
+        const response = await this.api.get<{ total: number; items: IProduct[] }>('/product/');
+        return response.items; //save only items array, not as an object
     }
     createOrder(order: IOrder): Promise<IOrderResponse> {
         return this.api.post('/order/', order);
