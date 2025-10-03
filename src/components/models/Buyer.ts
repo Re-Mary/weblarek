@@ -1,4 +1,4 @@
-import { IBuyer, TPayment } from "../../../types";
+import { IBuyer, TPayment } from "../../types";
 
 export class Buyer {
     //attributes
@@ -29,9 +29,6 @@ export class Buyer {
         }
     }
     getData(): IBuyer {
-        if (this.payment === null) {
-            throw new Error("Что-то пошло не так: способ оплаты не выбран");
-        }
         return {
             payment: this.payment,
             email: this.email,
