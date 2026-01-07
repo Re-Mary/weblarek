@@ -1,4 +1,5 @@
 import { IBuyer, TPayment } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class Buyer {
     //attributes
@@ -7,7 +8,7 @@ export class Buyer {
     private phone: string;
     private address: string;
     //constructor
-    constructor() {
+    constructor(events: IEvents) {
         this.payment = null;
         this.email = '';
         this.phone = '';

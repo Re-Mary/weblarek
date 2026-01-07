@@ -18,3 +18,8 @@
     border: $hoverBorder;
   }
 }
+
+.card__button_disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

@@ -238,3 +238,251 @@ email: 'Укажите email',
 `getProducts(): Promise<IProduct[]>` - делает GET запрос на эндпоинт /product/ и возвращает массив товаров.
 `createOrder(order: IOrder): Promise<IOrderResponse>` - делает post запрос на эндпоинт /order/ и передаёт в него данные, полученные в параметрах метода.
 
+### Слой представления (View)
+Слой View отвечает за визуальное отображение данных и взаимодействие пользователя с интерфейсом.
+Каждый компонент пользовательского интерфейса оформлен как отдельный класс, который наследует базовый класс Component<T>.
+View-слой не хранит данные — он получает их от Presenter и отображает с помощью метода render().
+
+#### Интерфейс IHeader
+Эта сущность создана для описания данных
+```
+interface IHeader {
+  counter: number;
+}
+```
+#### Класс HeaderView
+Описание:
+Класс Header отвечает за отображение и управление заголовком веб-страницы, включая счетчик товаров в корзине и кнопку взаимодействия пользователя.
+Класс отвечает за:
+- Отображение заголовка страницы.
+- Управление счетчиком товаров в корзине.
+- Обработку взаимодействий пользователя с кнопкой корзины.
+
+Поля:
+`protected counterElement: HTMLElement` - счетчик товаров в корзине
+`protected basketButton: HTMLButtonElement` - кнопка взаимодействия пользователя
+
+Конструктор:
+`constructor(protected events: IEvents, container: HTMLElement)` - принимает аргументом
+
+Методы класса:
+`set counter(value: number)` - сеттер для обновления счетчика товаров в корзине
+
+#### Интерфейс IGallery
+Эта сущность создана для описания данных
+```
+interface IGallery {
+  catalog: HTMLElement;
+}
+```
+#### Класс GalleryView
+Описание:
+Этот класс будет использовать композицию, чтобы выполнить запрос на сервер с помощью метода get класса Api и будет получать с сервера объект с массивом товаров.
+Класс отвечает за:
+- Отображение каталога товаров (массив карточек)
+- Обновление каталога при получении новых данных
+
+Поля:
+`catalogElement: HTMLElement` - счетчик товаров в корзине
+
+Конструктор:
+`constructor(protected events: IEvents, container: HTMLElement)` - принимает аргументом
+- События
+- Контейнер, в который будет вставлен каталог товаров
+
+Методы класса:
+`set catalog(items: HTMLElement[])` - передает карточкии и вставляет в разметку
+`type TCardCatalog = Pick<IProduct,  'image' | 'category'>`
+`type CategoryKey = keyof typeof categoryMap;`
+
+#### Интерфейс компонента ModalView
+Эта сущность создана для описания данных компонента `ModalView`.
+```
+interface IModal {
+    content: HTMLElement;
+}
+```
+
+#### Класс ModalView
+Описание:
+Класс ModalView отвечает за отображение и управление модальным окном.
+
+Поля:
+`protected contentElement: HTMLElement` - элемент, содержащий контент модального окна
+`protected closeButton: HTMLButtonElement` - кнопка закрытия модального окна
+
+Все слушатели событий устанавливаются один раз в конструкторе класса;
+О действиях пользователя класс представления уведомляет с помощью брокера событий или вызывает обработчик, полученный в конструкторе. В случае, если в класс представления передается обработчик, то этот обработчик должен содержать генерацию события с помощью брокера событий;
+
+Конструктор:
+`constructor(protected event: IEvents, container: HTMLElement) {}` - Принимает объект событий и контейнер для рендеринга.
+
+Методы:
+`set content(value: HTMLElement)` - Устанавливает контент модального окна.
+
+#### Интерфейс компонента IBasket
+Эта сущность создана для описания данных компонента `BasketView`.
+```
+interface IBasket {
+  basketList: IProduct[];
+  totalPrice: number;
+  emptyMessage: boolean;
+}
+```
+#### Класс BasketView
+Класс, отвечающий за отображение корзины покупок. 
+В этом классе реализованы методы для добавления, удаления и отображения товаров в корзине.
+Отвечает за взаимодействие с пользователем при работе с корзиной.
+
+Поля класса:
+- `protected basketList: HTMLUListElement` - элемент, содержащий список товаров в корзине.
+- `protected submitButton: HTMLButtonElement` - кнопка для оформления заказа.
+- `protected totalPrice: HTMLElement` - элемент, отображающий общую стоимость товаров в корзине.
+- `emptyMessageElement: HTMLElement` - элемент, отображающий сообщение о пустой корзине.
+- `protected events: IEvents` - объект для управления событиями.
+
+Конструктор:
+`constructor(protected events: IEvents, container: HTMLElement) {}`
+- Принимает объект событий и контейнер для рендеринга.
+- Инициализирует элементы корзины и вызывает метод render для создания структуры корзины.
+
+Методы:
+`set basketList(items: HTMLElement[])` - Устанавливает список товаров в корзине, заменяя текущие элементы на новые.
+`set totalPrice(value: number)` - Отображает общую стоимость товаров в корзине.
+
+`setButtonText(value: string): void` - Устанавливает текст на кнопке оформления заказа.
+`setEmptyMessage(value: boolean): void` - Устанавливает сообщение о пустой корзине и отображает его в корзине.
+`setButtonState(isDisabled: boolean): void` - Устанавливает состояние кнопки оформления заказа (активна/неактивна).
+
+#### Интерфейс компонента SuccessView
+Эта сущность создана для описания данных компонента `SuccessView`.
+```
+interface ISuccsess {
+    totalPrice: number;
+}
+```
+#### Класс компонента SuccessView
+Класс отвечает за отображение успешного оформления заказа.
+
+Поля:
+`protected totalPriceElement: HTMLElement` - элемент, отображающий общую стоимость оплаченной покупки
+`protected succeedOrderCloseButton: HTMLButtonElement` - кнопка закрытия окна успешного оформления заказа
+
+//все слушатели событий устанавливаются один раз в конструкторе класса;
+Конструктор:
+`constructor(protected event: IEvents, container: HTMLElement) {}` - Принимает объект событий и контейнер для рендеринга.
+
+Методы:
+`set totalPrice(value: number)` - Устанавливает общую стоимость оплаченной покупки.
+
+
+
+
+
+#### Интерфейс ICardParent
+Эта сущность создана для описания данных
+```
+interface ICardParent {
+  cardElement: HTMLElement;
+}
+```
+
+#### Абстрактный класс CardParentView
+Описание:
+Абстрактеный Класс CardParentView является родительским классом для всех карточек в приложении.
+Он содержит общие методы и свойства, которые используются во всех карточках.
+Наследуется классами CardBasketView и CardImageCategoryView
+
+Поля класса:
+`protected cardElement: HTMLElement` - Элемент карточки.
+`protected priceElement: HTMLElement` - Элемент цены.
+`protected titleElement: HTMLElement` - Элемент заголовка.
+`protected submitButtonElement: HTMLElement` - Элемент кнопки добавления в корзину.
+`protected events: IEvents` - Объект событий. ?
+
+Конструктор класса:
+`constructor(protected events: IEvents, container: HTMLElement) {}`
+
+Методы класса:
+`set id(value: string)` - Установить идентификатор карточки.
+`get id(): string` - Получить идентификатор карточки.
+`set price(value: number)` - Установить цену карточки.
+`set title(value: string)` - Установить заголовок карточки.
+
+#### Класс CardBasketView (Children of CardBasketView)
+Описание:
+Класс CardBasketView является дочерним классом от CardParentView.
+Он представляет собой карточку товара в корзине.
+Содержит методы и свойства, специфичные для отображения товара в корзине.
+
+Поля класса:
+`private _submitButtonElement: HTMLElement` - Элемент кнопки удаления товара из корзины.
+`private _indexElement: HTMLElement` - Элемент индекса товара в корзине.
+
+Конструктор класса:
+`constructor(events: IEvents, container: HTMLElement)` - Инициализирует элементы карточки корзины и добавляет обработчик события на кнопку удаления.
+
+Методы класса:
+`set index(value: number)` - Устанавливает индекс товара в корзине.
+
+
+
+#### Класс CardImageCategoryView
+Описание:
+Абстрактный класс карточек с изображением и категорией
+Родитель для карточек каталога и предпросмотра.
+
+Поля класса:
+`protected _imageElement: HTMLImageElement` - Элемент изображения карточки.
+`protected _categoryElement: HTMLElement` - Элемент категории карточки.
+`protected _cdnUrl: string` - URL CDN для загрузки изображений.
+`protected _categoryMap: Record<string, string>` - Карта соответствий категорий и CSS-классов.
+ 
+Конструктор класса:
+`constructor(container: HTMLElement, events: IEvents, cdnUrl: string, categoryMapping: Record<string, string> = categoryMap)` - Инициализирует элементы карточки и сохраняет настройки.
+ 
+Методы класса:
+`set image(value: string)` - Устанавливает изображение карточки.
+`set category(value: string)` - Устанавливает категорию карточки.
+`protected updateCategoryClass(categoryName: string): void` - Обновляет CSS-класс категории на основе карты соответствий.
+
+
+
+Класс CardCategoryImage
+Поля класса:
+`protected imageElement: HTMLElement` - Элемент изображения.
+`protected categoryMap: Map<string, HTMLElement> = new Map<string, HTMLElement>();` - Словарь категорий.
+
+#### Класс CardPreviewView
+Описание класса:
+`CardPreviewView` расширяет `CardImageCategoryView` и предназначен для отображения превью карточки товара. 
+При клике на кнопку генерируется событие обновления корзины с идентификатором товара.
+
+Поля класса:
+`protected descriptionElement: HTMLElement` - Элемент описания.
+`protected buttonElement: HTMLElement` - Элемент кнопки.
+
+Конструктор класса:
+`constructor(container: HTMLElement, events: IEvents, cdnUrl: string, categoryMapping: Record<string, string> = categoryMap)`   
+- Инициализирует элементы карточки и сохраняет настройки. Добавляет обработчик клика на кнопку для обновления корзины.
+
+Методы класса:
+`set description(value: string)` - Устанавливает текст описания карточки.
+`set buttonText(value: string)` - Устанавливает текст кнопки.
+`toggleState(isActive: boolean): void` - Переключает состояние кнопки (активна/неактивна).
+
+
+#### Класс CardCatalogView
+Поля класса:
+`protected imageElement: HTMLElement` - Элемент изображения.
+`protected categoryElement: HTMLElement` - Элемент категории.
+
+Конструктор класса:
+`constructor(container: HTMLElement, events: IEvents, cdnUrl: string, categoryMapping: Record<string, string> = categoryMap)` 
+- Инициализирует контейнер, события, URL CDN и отображение категорий. Добавляет обработчик клика на контейнер для открытия каталога.
+
+Описание класса:
+`CardCatalogView` расширяет `CardImageCategoryView` и предназначен для отображения карточки товара в каталоге. 
+При клике на карточку генерируется событие открытия каталога с идентификатором товара.
+
+
