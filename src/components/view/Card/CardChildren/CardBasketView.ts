@@ -1,8 +1,5 @@
 import { CardParentView } from "../CardParentView";
-import { IEvents } from "../../../base/Events";
 import { ensureElement } from "../../../../utils/utils";
-import { State } from "../../../../utils/constants";
-import { events } from "../../../../main";
 
 /**
  * Класс CardBasketView

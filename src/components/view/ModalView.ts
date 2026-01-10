@@ -1,22 +1,3 @@
-/*
-
-#### Интерфейс компонента ModalView
-Эта сущность создана для описания данных компонента `ModalView`.
-```
-interface IModal {
-    content: HTMLElement;
-}
-
-#### Класс ModalView
-Описание:
-Класс ModalView отвечает за отображение и управление модальным окном.
-
-Поля:
-
-Методы:
-
-*/
-
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
@@ -40,11 +21,7 @@ export class ModalView extends Component<IModal> {
         this.container.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE)); //new
         this.closeButton.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE));
         this.contentElement.addEventListener('click', (e: Event) => {
-            if (e.target === this.contentElement) {
-                e.stopPropagation(); //new
-                this.event.emit(State.MODAL_CLOSE);
-                
-            }
+                e.stopPropagation(); // Предотвращаем закрытие модального окна при клике внутри контента
         });
 
     }
@@ -62,6 +39,4 @@ export class ModalView extends Component<IModal> {
     closeModal(): void {
         this.container.classList.remove('modal_active');
     }
-
-
 }

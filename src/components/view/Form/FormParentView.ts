@@ -1,55 +1,16 @@
-/*
-Class FormParentView
-  Родительский класс для форм
-  Содержит общие методы и свойства для всех форм
-  Наследуется классами FormOrderView и FormContactView
-    Отвечает за отображение формы и обработку событий
-    Использует методы Класса Buyer для валидации формы и отправки данных
-
-    View-слой не хранит данные — он получает их от Presenter и отображает с помощью метода render().
-
-#### Интерфейс IFormParent
-Эта сущность создана для описания данных
-```interface IFormParent {
-  formElement: HTMLElement;
-}```
-
-
-#### Абстрактеный Класс FormParentView
-Описание:
-Абстрактеный Класс FormParentView является родительским классом для всех форм в приложении. 
-Он содержит общие методы и свойства, которые используются в формах заказа и контактов, например, методы для валидации формы и отправки данных.
-
-Поля класса:
-`protected formElement: HTMLElement` - Элемент формы.
-`protected submitButton: HTMLButtonElement` - Кнопка отправки формы.
-
-Методы класса:
-`formValidation()` - Метод для валидации формы.
-`formSubmit()` - Метод для отправки данных формы.
-
-
-
-#### Класс FormOrderView
-Описание:
-Класс FormOrderView наследуется от FormParentView и отвечает за отображение и управление формой заказа.
-Класс содержит методы для отправки данных формы заказа, обработки событий и валидации формы.
-
-поля класса:
-`protected formElement: HTMLElement` - элемент формы заказа
-
-
-#### Класс FormContactView
-Описание:
-Класс FormContactView наследуется от FormParentView и отвечает за отображение и управление формой контактов.
-Класс содержит методы для отправки данных формы контактов, обработки событий и валидации формы.
-
-*/
-
 import { ensureElement } from "../../../utils/utils";
 import { Component } from "../../base/Component";
 import { IEvents } from "../../base/Events";
 import { State } from "../../../utils/constants";
+
+/**
+ * @description
+ * Класс FormParentView
+ * Описание:
+ * Абстрактный класс FormParentView служит базовым классом для всех форм в приложении.
+ * Он предоставляет общие методы и свойства для управления формами, включая обработку ошибок,
+ * валидацию и управление состоянием кнопки отправки.
+ */
 
 interface IFormParent {
   formErrorElement: HTMLElement;
@@ -75,7 +36,6 @@ export abstract class FormParentView extends Component<IFormParent> {
 
 
     //eventListner
-    // old variant: this._submitButton.addEventListener('click', () => this.events.emit(State.FORM_SUBMIT));
     this.container.addEventListener('submit', (event) => {
       event.preventDefault();
       this.events.emit(State.FORM_SUBMIT);
@@ -110,7 +70,5 @@ export abstract class FormParentView extends Component<IFormParent> {
     this.clearErrorMessages();
     this._submitButton.toggleAttribute('disabled', true);
   };
-
-
 
 }

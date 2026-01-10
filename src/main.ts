@@ -34,13 +34,13 @@ const basketModel = new Basket(events);
 const buyerModel = new Buyer(events);
 
 //Teamplates
-const TeamplateCardCatalog = ensureElement<HTMLTemplateElement>('#card-catalog');
-const TeamplateCardPreview = ensureElement<HTMLTemplateElement>('#card-preview');
-const TeamplateCardBasket = ensureElement<HTMLTemplateElement>('#card-basket');
-const TemplateBasket = ensureElement<HTMLTemplateElement>('#basket');
-const TeamplateOrderForm = ensureElement<HTMLTemplateElement>('#order');
-const TeamplateContactForm = ensureElement<HTMLTemplateElement>('#contacts');
-const TeamplateSuccess = ensureElement<HTMLTemplateElement>('#success');
+const teamplateCardCatalog = ensureElement<HTMLTemplateElement>('#card-catalog');
+const teamplateCardPreview = ensureElement<HTMLTemplateElement>('#card-preview');
+const teamplateCardBasket = ensureElement<HTMLTemplateElement>('#card-basket');
+const templateBasket = ensureElement<HTMLTemplateElement>('#basket');
+const teamplateOrderForm = ensureElement<HTMLTemplateElement>('#order');
+const teamplateContactForm = ensureElement<HTMLTemplateElement>('#contacts');
+const teamplateSuccess = ensureElement<HTMLTemplateElement>('#success');
 
 //Elements
 const modalContainer = ensureElement<HTMLElement>('.modal');
@@ -51,12 +51,11 @@ const headerElement = ensureElement<HTMLElement>('.header');
 const headerView = new HeaderView(events, headerElement);
 const modalView = new ModalView(events, modalContainer);
 const galleryView = new GalleryView(galleryElement);
-const success = new SuccessView(events, cloneTemplate(TeamplateSuccess));
-const basketView = new BasketView(events, cloneTemplate(TemplateBasket));
-const cardPreview = new CardPreviewView(cloneTemplate(TeamplateCardPreview), events);
-const formOrderView = new FormOrderView(events, cloneTemplate(TeamplateOrderForm));
-const formContactView = new FormContactView(events, cloneTemplate(TeamplateContactForm));
-
+const success = new SuccessView(events, cloneTemplate(teamplateSuccess));
+const basketView = new BasketView(events, cloneTemplate(templateBasket));
+const cardPreview = new CardPreviewView(cloneTemplate(teamplateCardPreview), events);
+const formOrderView = new FormOrderView(events, cloneTemplate(teamplateOrderForm));
+const formContactView = new FormContactView(events, cloneTemplate(teamplateContactForm));
 
 
 //get products from server and set them to productsModel
@@ -65,13 +64,25 @@ shopApi.getProducts()
     .catch((err) => console.log('Ошибка при получении данных с сервера: ', err));
 
 
-//EVENTS
+//NEW ADDED
+function buildOrderData() {
+    return {
+        payment: buyerModel.getData().payment,
+        address: buyerModel.getData().address,
+        email: buyerModel.getData().email,
+        phone: buyerModel.getData().phone,
+        items: basketModel.getItems().map(item => item.id),
+        total: basketModel.getTotalPrice(),
+    };
+}
+
+//EVENTS --> PRESENTERS
 //CATALOG EVENTS
 
 //Load Catalog Cards and open Preview Card
 events.on(State.CATALOG_UPDATE_SET_ITEMS, () => {
     const itemCards = productsModel.getItems().map(item => {
-        const card = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), {
+        const card = new CardCatalogView(cloneTemplate(teamplateCardCatalog), {
             onClick: () => events.emit(State.CATALOG_OPEN, {id: item.id}),
         });
         return card.render(item);
@@ -98,7 +109,6 @@ events.on(State.CATALOG_UPDATE_SET_SELECTED_ITEM, () => {
 
     modalView.openModal(cardRender);
 });
-
 
 //Click on card in gallery
 events.on(State.CATALOG_OPEN, (data: { id: string }) => {
@@ -127,7 +137,7 @@ events.on(State.BASKET_OPEN, () => {
     const basket = basketView.render();
 
     basketView.setSubmitButtonState(basketProducts);
-    basketView.setEmptyMessage(!basketProducts);
+    //basketView.setEmptyMessage(!basketProducts);
     modalView.openModal(basket);
 })
 
@@ -141,7 +151,7 @@ events.on(State.MODAL_CLOSE, () => {
 events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, count: number }) => {
     const basketCatalog = data.items.map((item, index) => {
         const card = new CardBasketView(
-            cloneTemplate(TeamplateCardBasket),
+            cloneTemplate(teamplateCardBasket),
             {
                 onRemove: () => events.emit(State.BASKET_REMOVE, { id: item.id }),
             }
@@ -156,156 +166,16 @@ events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, 
     basketView.setSubmitButtonState(data.count !== 0);
 });
 
-
 //Delete Items from Basket
 events.on(State.BASKET_REMOVE, (product: { id: string }) => {
     basketModel.removeItem(productsModel.getItemById(product.id)!);    
 });
 
-
 //Order Button in BasketView
 events.on(State.BASKET_ADD_ORDERED, () => {
-    modalView.closeModal();
     const form = formOrderView.render();
-    console.log('Opening Order Form');
     modalView.openModal(form);
-    console.log('Order Form opened');
 });
-
-// //Order Button in Basket
-// events.on(State.BASKET_ADD_ORDERED, () => {
-//     console.log('Opening Order Form');
-//     modalView.content = formOrderView.render();
-// });
-
-
-
-
-
-// //Click on card in gallery
-// events.on(State.CATALOG_OPEN, (data: { id: string }) => {
-//     const product = productsModel.getItemById(data.id);
-//     if (!product) return;
-//     productsModel.setSelectedItem(product);
-//     console.log("Карточка выбрана: ", data.id);
-// });
-
-//Update Card and open preview card
-
-/*
-    показана детальная информация о товаре;
-    присутствует кнопка «Купить», если товар не был выбран покупателем;
-    при нажатии на кнопку «Купить» товар добавляется в корзину (если не был добавлен в корзину ранее);
-    если товар находится в корзине, кнопка должна быть заменена на «Удалить из корзины»;
-    при нажатии на кнопку «Удалить из корзины» товар удаляется из корзины;
-    после нажатия кнопки модальное окно закрывается;
-    если у товара нет цены, кнопка в карточке должна быть заблокирована и иметь название «Недоступно».
-*/
-
-//EVENTS
-//CATALOG EVENTS
-
-// //Load Catalog Cards and open Preview Card
-// events.on(State.CATALOG_UPDATE_SET_ITEMS, () => {
-//     const itemCards = productsModel.getItems().map(item => {
-//         const card = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), {
-//             onClick: () => events.emit(State.CATALOG_OPEN, {id: item.id}),
-//         });
-//         return card.render(item);
-//     });
-
-//     galleryView.render( { catalog: itemCards } );
-// });
-
-// //Changes im Model Basket -> update BasketCard View and Header (Basket icon + counter in Header)
-// events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, count: number }) => {
-//     headerView.counter = data.count;
-//     basketView.totalPrice = data.totalPrice;
-//     basketView.basketList = data.items.map(item =>
-//         new CardBasketView(cloneTemplate(TeamplateCardBasket), events).render(item)
-//     );
-// });
-
-// //Delete Items from Basket
-// events.on(State.BASKET_REMOVE, (product: { id: string }) => {
-//     const item = productsModel.getItemById(product.id);
-//     if (!item) return;
-
-//     if (item) {
-//         basketModel.removeItem(item);
-//         console.log(`Removing item with id ${product.id} from basket.`);
-//     }
-
-//     if (basketModel.getCount() === 0) {
-//         basketView.setEmptyMessage(true);
-//         basketView.setSubmitButtonState(false);
-//     }
-    
-// });
-
-
-
-
-// //Toggle Item in Basket
-// events.on(State.BASKET_TOGGLE_ITEM, (product: { id: string }) => {
-//     const item = productsModel.getItemById(product.id);
-//     if (!item) return;
-
-//     if (basketModel.hasItem(product.id)) {
-//         basketModel.removeItem(item);
-//     } else {
-//         basketModel.addItem(item);
-//     }
-
-//     modalView.closeModal();
-// });
-
-// //New BASKET TOGGLE -> Preview Card
-// events.on(State.PREVIEW_OPEN, () => {
-//     const preview = productsModel.getItems().map((item) => {
-//         const cardData = new CardBasketView(cloneTemplate(TemplateCardBasket), {
-//             onClick: () => events.emit(State.BASKET_TOGGLE_ITEM, item),
-//         });
-//         return cardData.render(item);
-//     });
-
-//     galleryView.render( { catalog: preview} );
-// });
-
-
-
-// events.on(State.CARD_CATALOG_LOAD, () => {
-//     const itemCard = productsModel.getItems().map((item) => {
-//         const cardData = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), CDN_URL, categoryMap, {
-//             onClick: () => events.emit(State.PREVIEW_OPEN, item),
-//         });
-//         return cardData.render(item);
-//     });
-
-//     galleryView.render( {catalog: itemCard });
-// });
-
-/*Корзина:
-
-    отображается список товаров, которые выбрал покупатель;
-    для каждого товара указана цена и присутствует кнопка удаления. Если нажать на кнопку, товар удаляется из корзины;
-    отображается общая стоимость товаров в корзине;
-    присутствует кнопка оформления покупки;
-    если в корзине нет товаров, кнопка оформления должна быть деактивирована;
-    если товаров нет в корзине — вместо списка товаров выводится надпись «Корзина пуста»;
-    при нажатии на кнопку «Оформить» открывается модальное окно с формой оформления товара.
-
-*/
-
-
-
-
-
-
-
-
-
-
 
 
 //FORM EVENTS
@@ -369,23 +239,44 @@ events.on(State.BUYER_CHANGED, (data: { field: string}) => {
     if (data.field === 'payment' || data.field === 'address') {
         const isValid = formOrderView.formValidation(errors);
         formOrderView.setSubmitEnabled(isValid);
-        // formOrderView.setSubmitDisabled(!isValid);
         formOrderView.togglePaymentStatus(choosenPayment);
     } else if (data.field === 'email' || data.field === 'phone') {
         formContactView.formValidation(errors);
         const isValid = !errors.email && !errors.phone;
         formContactView.setSubmitEnabled(isValid);
-        // formContactView.setSubmitDisabled(!errors.email && !errors.phone);
     }
 });
 
-events.on(State.FORM_CONTACTS_ADD, () => {
-    success.totalPrice = basketModel.getTotalPrice();
-    basketModel.clear();
-    buyerModel.clear();
-    modalView.content = success.render();
+// //old version
+// events.on(State.FORM_CONTACTS_ADD, () => {
+//     success.totalPrice = basketModel.getTotalPrice();
+//     basketModel.clear();
+//     buyerModel.clear();
+//     modalView.content = success.render();
 
+// });
+
+//NEW VERSION
+events.on(State.FORM_CONTACTS_ADD, async () => {
+    try {
+        const order = buildOrderData();
+        console.log('Sending order to server:', order);
+
+        const result = await shopApi.createOrder(order);
+        console.log('Order success:', result);
+
+        success.totalPrice = order.total;
+
+        basketModel.clear();
+        buyerModel.clear();
+
+        modalView.openModal(success.render());
+
+    } catch (error) {
+        console.error('Order failed:', error);
+    }
 });
+
 
 events.on(State.CONFIRMATION_CLOSE, () => {
     modalView.closeModal();

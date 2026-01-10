@@ -1,14 +1,15 @@
-/*
-#### Класс FormContactView
-Описание:
-Класс FormContactView наследуется от FormParentView и отвечает за отображение и управление формой контактов.
-Класс содержит методы для отправки данных формы контактов, обработки событий и валидации формы.
-*/
-
 import { IEvents } from "../../../base/Events";
 import { FormParentView, IFormValidation } from "../FormParentView";
 import { State } from "../../../../utils/constants";
 import { ensureElement } from "../../../../utils/utils";
+
+/**
+ * @description
+ *  Класс FormContactView
+ * Описание:
+ * Класс FormContactView наследуется от FormParentView и отвечает за отображение и управление формой контактов.
+ * Класс содержит методы для отправки данных формы контактов, обработки событий и валидации формы.
+ */
 
 export class FormContactView extends FormParentView {
     private _email: HTMLInputElement;
@@ -34,15 +35,6 @@ export class FormContactView extends FormParentView {
         this.clearErrorMessages();
         this.formError = error.email || error.phone || '';
         return !error.email && !error.phone;
-        // if (error.email) {
-        //     this._email.classList.add('form__errors-active');
-        //     return false;
-        // }
-        // if (error.phone) {
-        //     this._phone.classList.add('form__errors-active');
-        //     return false;
-        // }
-        // return true;
     }
 
     clearPhoneEmailFields(): void {

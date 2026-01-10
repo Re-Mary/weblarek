@@ -19,21 +19,9 @@ export class CardCatalogView extends CardImageCategoryView {
 
   ) {
     super(container);
-    console.log(actions);
 
     if (actions?.onClick) {
       this.container.addEventListener('click', actions.onClick);
     }
   }
 }
-
-
-// export class CardCatalogView extends CardImageCategoryView {
-//     protected
-//     constructor(container: HTMLElement, events: IEvents, cdnUrl: string, categoryMapping: Record<string, string> = categoryMap) {
-//         super(container, events, cdnUrl, categoryMapping);
-
-//         //eventListner
-//         this.container.addEventListener('click', () => this.events.emit(State.CATALOG_OPEN, { id: this.id }));
-//     }
-// }

@@ -1,28 +1,3 @@
-/*
-#### Интерфейс компонента SuccessView
-Эта сущность создана для описания данных компонента `SuccessView`.
-```
-interface ISuccsess {
-    totalPrice: number;
-}
-```
-
-#### Класс компонента SuccessView
-Класс отвечает за отображение успешного оформления заказа.
-
-Поля:
-`protected totalPriceElement: HTMLElement` - элемент, отображающий общую стоимость оплаченной покупки
-`protected succeedOrderCloseButton: HTMLButtonElement` - кнопка закрытия окна успешного оформления заказа
-
-//все слушатели событий устанавливаются один раз в конструкторе класса;
-Конструктор:
-`constructor(protected event: IEvents, container: HTMLElement) {}` - Принимает объект событий и контейнер для рендеринга.
-
-Методы:
-`set totalPrice(value: number)` - Устанавливает общую стоимость оплаченной покупки.
-
-*/
-
 import { State } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
