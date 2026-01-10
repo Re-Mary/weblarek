@@ -4,7 +4,7 @@ import { Basket } from './components/models/Basket';
 import { Buyer } from './components/models/Buyer';
 import { Api } from './components/base/Api';
 import { ShopApi } from './components/base/ShopApi';
-import { API_URL, categoryMap, CDN_URL } from './utils/constants';
+import { API_URL } from './utils/constants';
 import { EventEmitter } from './components/base/Events';
 import { State } from './utils/constants';
 import { IProduct, TPayment } from './types/index';
@@ -64,7 +64,7 @@ shopApi.getProducts()
     .catch((err) => console.log('Ошибка при получении данных с сервера: ', err));
 
 
-//NEW ADDED
+//Build order data
 function buildOrderData() {
     return {
         payment: buyerModel.getData().payment,
@@ -137,7 +137,6 @@ events.on(State.BASKET_OPEN, () => {
     const basket = basketView.render();
 
     basketView.setSubmitButtonState(basketProducts);
-    //basketView.setEmptyMessage(!basketProducts);
     modalView.openModal(basket);
 })
 
@@ -247,16 +246,7 @@ events.on(State.BUYER_CHANGED, (data: { field: string}) => {
     }
 });
 
-// //old version
-// events.on(State.FORM_CONTACTS_ADD, () => {
-//     success.totalPrice = basketModel.getTotalPrice();
-//     basketModel.clear();
-//     buyerModel.clear();
-//     modalView.content = success.render();
 
-// });
-
-//NEW VERSION
 events.on(State.FORM_CONTACTS_ADD, async () => {
     try {
         const order = buildOrderData();

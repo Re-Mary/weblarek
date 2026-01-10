@@ -18,7 +18,7 @@ export class ModalView extends Component<IModal> {
         this.closeButton = ensureElement<HTMLButtonElement>('.modal__close');
 
         //eventlistners
-        this.container.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE)); //new
+        this.container.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE));
         this.closeButton.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE));
         this.contentElement.addEventListener('click', (e: Event) => {
                 e.stopPropagation(); // Предотвращаем закрытие модального окна при клике внутри контента
