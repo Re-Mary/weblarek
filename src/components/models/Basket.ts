@@ -35,7 +35,9 @@ export class Basket {
             totalPrice: this.getTotalPrice(),
             count: this.getCount(),
         })
+        console.log(`Item with id ${item.id} removed from basket.`); //debug log
     }
+
 
     clear(): void {
         this._items = [];

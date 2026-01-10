@@ -42,3 +42,7 @@ export interface IOrderResponse {
 export type TCardCatalog = Pick<IProduct,  'image' | 'category'>
 export type CategoryKey = keyof typeof categoryMap;
 
+export interface ICardActions {
+    onClick?: (event: MouseEvent) => void;
+}
+

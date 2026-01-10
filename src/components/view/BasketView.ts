@@ -25,6 +25,10 @@ interface IBasket {
     emptyMessage: boolean;
 }
 
+// type actions = {
+//     onOrder?: () => void;
+// };
+
 export class BasketView extends Component<IBasket> {
     protected basketListElement: HTMLUListElement; // Элемент, содержащий список товаров в корзине, порядок не важен
     protected submitButton: HTMLButtonElement;
@@ -32,14 +36,20 @@ export class BasketView extends Component<IBasket> {
     protected emptyMessageElement: HTMLElement;
 
     //все необходимые элементы должны быть найдены в конструкторе класса
-    constructor(protected event: IEvents, container: HTMLElement) {
+    constructor(protected event: IEvents, container: HTMLElement, /**actions?: actions*/) {
         super(container);
         this.basketListElement = ensureElement<HTMLUListElement>('.basket__list', container);
         this.submitButton = ensureElement<HTMLButtonElement>('.basket__button', container);
         this.totalPriceElement = ensureElement<HTMLElement>('.basket__price', container);
         this.emptyMessageElement = ensureElement<HTMLElement>('.basket__empty-message', container);
 
-        //eventlistners
+        // if (actions?.onOrder) {
+        //     this.submitButton.addEventListener('click', () => {
+        //         actions.onOrder && actions.onOrder();
+        //     });
+        // }
+
+        // //eventlistners
         this.submitButton.addEventListener('click', () => this.event.emit(State.BASKET_ADD_ORDERED));
     }
 

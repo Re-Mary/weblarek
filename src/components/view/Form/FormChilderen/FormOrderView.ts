@@ -66,10 +66,10 @@ export class FormOrderView extends FormParentView {
         this._addressInput.addEventListener('input', () => this.events.emit(State.FORM_ADDRESS_CHANGED, { address: this._addressInput.value }));
         this._submitButton.addEventListener('click', () => this.events.emit(State.FORM_SUBMIT_ORDER));
 
-        this.container.addEventListener('focusin', (event) => {
-            if (event.target instanceof HTMLInputElement)
-                this.events.emit(State.FORM_INPUT_FOCUS)
-        });
+        // this.container.addEventListener('focusin', (event) => {
+        //     if (event.target instanceof HTMLInputElement)
+        //         this.events.emit(State.FORM_INPUT_FOCUS)
+        // });
     }
 
     //methods

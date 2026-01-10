@@ -12,16 +12,8 @@ interface IModal {
 Класс ModalView отвечает за отображение и управление модальным окном.
 
 Поля:
-`protected contentElement: HTMLElement` - элемент, содержащий контент модального окна
-`protected closeButton: HTMLButtonElement` - кнопка закрытия модального окна
-
-//все слушатели событий устанавливаются один раз в конструкторе класса;
-//о действиях пользователя класс представления уведомляет с помощью брокера событий или вызывает обработчик, полученный в конструкторе. В случае, если в класс представления передается обработчик, то этот обработчик должен содержать генерацию события с помощью брокера событий;
-Конструктор:
-`constructor(protected event: IEvents, container: HTMLElement) {}` - Принимает объект событий и контейнер для рендеринга.
 
 Методы:
-`set content(value: HTMLElement)` - Устанавливает контент модального окна.
 
 */
 
@@ -32,6 +24,7 @@ import { State } from "../../utils/constants";
 
 interface IModal {
     content: HTMLElement;
+
 }
 
 export class ModalView extends Component<IModal> {
@@ -44,9 +37,14 @@ export class ModalView extends Component<IModal> {
         this.closeButton = ensureElement<HTMLButtonElement>('.modal__close');
 
         //eventlistners
+        this.container.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE)); //new
         this.closeButton.addEventListener('click', () => this.event.emit(State.MODAL_CLOSE));
         this.contentElement.addEventListener('click', (e: Event) => {
-            if (e.target === this.contentElement) this.event.emit(State.MODAL_CLOSE);
+            if (e.target === this.contentElement) {
+                e.stopPropagation(); //new
+                this.event.emit(State.MODAL_CLOSE);
+                
+            }
         });
 
     }

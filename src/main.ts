@@ -53,7 +53,7 @@ const modalView = new ModalView(events, modalContainer);
 const galleryView = new GalleryView(galleryElement);
 const success = new SuccessView(events, cloneTemplate(TeamplateSuccess));
 const basketView = new BasketView(events, cloneTemplate(TemplateBasket));
-const cardPreview = new CardPreviewView(cloneTemplate(TeamplateCardPreview), events, CDN_URL, categoryMap);
+const cardPreview = new CardPreviewView(cloneTemplate(TeamplateCardPreview), events);
 const formOrderView = new FormOrderView(events, cloneTemplate(TeamplateOrderForm));
 const formContactView = new FormContactView(events, cloneTemplate(TeamplateContactForm));
 
@@ -66,23 +66,129 @@ shopApi.getProducts()
 
 
 //EVENTS
-//Update Gallery
-//подписываемся на событие, которое вызывается при добавлении товаров с сервера в модель, чтобы отобразить карточки на странице в галерее
-events.on(State.CATALOG_UPDATE_SET_ITEMS, (product: IProduct[]) => {
-    const cards = product.map(product =>
-        //возвращаем созданный экземпляр класса CardCatalogView
-        new CardCatalogView(cloneTemplate(TeamplateCardCatalog), events, CDN_URL, categoryMap).render(product)
-    )
-    galleryView.catalog = cards;
-    console.log(cards);
-})
+//CATALOG EVENTS
+
+//Load Catalog Cards and open Preview Card
+events.on(State.CATALOG_UPDATE_SET_ITEMS, () => {
+    const itemCards = productsModel.getItems().map(item => {
+        const card = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), {
+            onClick: () => events.emit(State.CATALOG_OPEN, {id: item.id}),
+        });
+        return card.render(item);
+    });
+
+    galleryView.render( { catalog: itemCards } );
+});
+
+events.on(State.CATALOG_UPDATE_SET_SELECTED_ITEM, () => {
+    const product = productsModel.getSelectedItem();
+    if (!product) return;
+    const cardRender = cardPreview.render(product);
+
+    if (product.price === null) {
+        cardPreview.buttonActive = false;
+        cardPreview.buttonText = 'Недоступно';
+    } else if (basketModel.hasItem(product.id)) {
+        cardPreview.buttonActive = true;
+        cardPreview.buttonText = 'Удалить из корзины';
+    } else {
+        cardPreview.buttonActive = true;
+        cardPreview.buttonText = 'Купить';
+    }
+
+    modalView.openModal(cardRender);
+});
+
 
 //Click on card in gallery
 events.on(State.CATALOG_OPEN, (data: { id: string }) => {
     const product = productsModel.getItemById(data.id);
     if (!product) return;
     productsModel.setSelectedItem(product);
+});
+
+//Toggle Item into Basket
+events.on(State.BASKET_TOGGLE_ITEM, () => {
+    const item = productsModel.getSelectedItem();
+    if (!item) return;
+
+    if (basketModel.hasItem(item.id)) {
+        basketModel.removeItem(item);
+    } else {
+        basketModel.addItem(item);
+    }
+
+    modalView.closeModal();
+});
+
+//Basket in header, open on click
+events.on(State.BASKET_OPEN, () => {
+    const basketProducts = basketModel.getCount() !== 0; 
+    const basket = basketView.render();
+
+    basketView.setSubmitButtonState(basketProducts);
+    basketView.setEmptyMessage(!basketProducts);
+    modalView.openModal(basket);
 })
+
+//Modal close
+events.on(State.MODAL_CLOSE, () => {
+    productsModel.resetSelectedItem();
+    modalView.closeModal();
+})
+
+//Changes im Model Basket -> update BasketCard View and Header (items, totalPrice, counter)
+events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, count: number }) => {
+    const basketCatalog = data.items.map((item, index) => {
+        const card = new CardBasketView(
+            cloneTemplate(TeamplateCardBasket),
+            {
+                onRemove: () => events.emit(State.BASKET_REMOVE, { id: item.id }),
+            }
+        );
+        card.index = index + 1;
+        return card.render(item);
+    });
+
+    headerView.counter = data.count;
+    basketView.basketList = basketCatalog;
+    basketView.totalPrice = data.totalPrice;
+    basketView.setSubmitButtonState(data.count !== 0);
+});
+
+
+//Delete Items from Basket
+events.on(State.BASKET_REMOVE, (product: { id: string }) => {
+    basketModel.removeItem(productsModel.getItemById(product.id)!);    
+});
+
+
+//Order Button in BasketView
+events.on(State.BASKET_ADD_ORDERED, () => {
+    modalView.closeModal();
+    const form = formOrderView.render();
+    console.log('Opening Order Form');
+    modalView.openModal(form);
+    console.log('Order Form opened');
+});
+
+// //Order Button in Basket
+// events.on(State.BASKET_ADD_ORDERED, () => {
+//     console.log('Opening Order Form');
+//     modalView.content = formOrderView.render();
+// });
+
+
+
+
+
+// //Click on card in gallery
+// events.on(State.CATALOG_OPEN, (data: { id: string }) => {
+//     const product = productsModel.getItemById(data.id);
+//     if (!product) return;
+//     productsModel.setSelectedItem(product);
+//     console.log("Карточка выбрана: ", data.id);
+// });
 
 //Update Card and open preview card
 
@@ -96,68 +202,81 @@ events.on(State.CATALOG_OPEN, (data: { id: string }) => {
     если у товара нет цены, кнопка в карточке должна быть заблокирована и иметь название «Недоступно».
 */
 
-events.on(State.CATALOG_UPDATE_SET_SELECTED_ITEM, (product: IProduct) => {
-    const cardRender = cardPreview.render(product);
+//EVENTS
+//CATALOG EVENTS
 
-    if (product.price === null) {
-        cardPreview.toggleState(false);
-        cardPreview.buttonText = 'Недоступно';
-    } else if (basketModel.hasItem(product.id)) {
-        cardPreview.toggleState(true);
-        cardPreview.buttonText = 'Удалить из корзины';
-    } else {
-        cardPreview.toggleState(true);
-        cardPreview.buttonText = 'Купить';
-    }
+// //Load Catalog Cards and open Preview Card
+// events.on(State.CATALOG_UPDATE_SET_ITEMS, () => {
+//     const itemCards = productsModel.getItems().map(item => {
+//         const card = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), {
+//             onClick: () => events.emit(State.CATALOG_OPEN, {id: item.id}),
+//         });
+//         return card.render(item);
+//     });
 
-    modalView.openModal(cardRender);
-});
+//     galleryView.render( { catalog: itemCards } );
+// });
+
+// //Changes im Model Basket -> update BasketCard View and Header (Basket icon + counter in Header)
+// events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, count: number }) => {
+//     headerView.counter = data.count;
+//     basketView.totalPrice = data.totalPrice;
+//     basketView.basketList = data.items.map(item =>
+//         new CardBasketView(cloneTemplate(TeamplateCardBasket), events).render(item)
+//     );
+// });
+
+// //Delete Items from Basket
+// events.on(State.BASKET_REMOVE, (product: { id: string }) => {
+//     const item = productsModel.getItemById(product.id);
+//     if (!item) return;
+
+//     if (item) {
+//         basketModel.removeItem(item);
+//         console.log(`Removing item with id ${product.id} from basket.`);
+//     }
+
+//     if (basketModel.getCount() === 0) {
+//         basketView.setEmptyMessage(true);
+//         basketView.setSubmitButtonState(false);
+//     }
+    
+// });
 
 
-//Toggle Item in Basket
-events.on(State.BASKET_TOGGLE_ITEM, (product: { id: string }) => {
-    const item = productsModel.getItemById(product.id);
-    if (!item) return;
-
-    if (basketModel.hasItem(product.id)) {
-        basketModel.removeItem(item);
-    } else {
-        basketModel.addItem(item);
-    }
-
-    modalView.closeModal();
-});
-
-//Update Basket View on Basket Change
-events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, count: number }) => {
-    headerView.counter = data.count;
-    basketView.totalPrice = data.totalPrice;
-    basketView.basketList = data.items.map(item =>
-        new CardBasketView(events, cloneTemplate(TeamplateCardBasket)).render(item)
-    );
-});
 
 
+// //Toggle Item in Basket
+// events.on(State.BASKET_TOGGLE_ITEM, (product: { id: string }) => {
+//     const item = productsModel.getItemById(product.id);
+//     if (!item) return;
 
-//Modal close
-events.on(State.MODAL_CLOSE, () => {
-    productsModel.resetSelectedItem();
-    modalView.closeModal();
-})
+//     if (basketModel.hasItem(product.id)) {
+//         basketModel.removeItem(item);
+//     } else {
+//         basketModel.addItem(item);
+//     }
 
-//Basket in header
-events.on(State.BASKET_OPEN, () => {
-    const basketProducts = basketModel.getCount() !== 0; 
-    const basket = basketView.render();
+//     modalView.closeModal();
+// });
 
-    basketView.setSubmitButtonState(basketProducts);
-    basketView.setEmptyMessage(!basketProducts);
-    modalView.openModal(basket);
-})
+// //New BASKET TOGGLE -> Preview Card
+// events.on(State.PREVIEW_OPEN, () => {
+//     const preview = productsModel.getItems().map((item) => {
+//         const cardData = new CardBasketView(cloneTemplate(TemplateCardBasket), {
+//             onClick: () => events.emit(State.BASKET_TOGGLE_ITEM, item),
+//         });
+//         return cardData.render(item);
+//     });
+
+//     galleryView.render( { catalog: preview} );
+// });
+
+
 
 // events.on(State.CARD_CATALOG_LOAD, () => {
 //     const itemCard = productsModel.getItems().map((item) => {
-//         const cardData = new CardCatalogView(events, cloneTemplate(TCardCatalog), {
+//         const cardData = new CardCatalogView(cloneTemplate(TeamplateCardCatalog), CDN_URL, categoryMap, {
 //             onClick: () => events.emit(State.PREVIEW_OPEN, item),
 //         });
 //         return cardData.render(item);
@@ -178,39 +297,16 @@ events.on(State.BASKET_OPEN, () => {
 
 */
 
-//Basket Update Items
-events.on(State.BASKET_UPDATE, (data: { items: IProduct[], totalPrice: number, count: number }) => {
-    const basketCatalog = data.items.map((item, index) => {
-        const card = new CardBasketView(events, cloneTemplate(TeamplateCardBasket));
-        card.index = index + 1;
-        return card.render(item);
-    });
-
-    headerView.counter = data.count;
-    basketView.basketList = basketCatalog;
-    basketView.totalPrice = data.totalPrice;
-    basketView.setSubmitButtonState(data.count !== 0);
-})
 
 
 
-//Delete Items from Basket
-events.on(State.BASKET_REMOVE, (product: { id: string }) => {
-    const item = productsModel.getItemById(product.id);
-    if (item) {
-        basketModel.removeItem(item);
-    }
 
-    if (basketModel.getCount() === 0) {
-        basketView.setEmptyMessage(true);
-        basketView.setSubmitButtonState(false);
-    }
-})
 
-//Order Button in Basket
-events.on(State.BASKET_ADD_ORDERED, () => {
-    modalView.content = formOrderView.render();
-})
+
+
+
+
+
 
 //FORM EVENTS
 //Order Form Submit

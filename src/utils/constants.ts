@@ -42,6 +42,7 @@ export enum State {
   CATALOG_OPEN = 'catalog:open',
   CARD_CATALOG_LOAD = 'catalog:load',
 
+
   //Card Preview
   PREVIEW_OPEN = 'preview:open',
 
@@ -64,6 +65,7 @@ export enum State {
   //Items events
   CATALOG_UPDATE_SET_ITEMS = 'catalog:update:items',
   CATALOG_UPDATE_SET_SELECTED_ITEM = 'catalog:update:selectedItem',
+  CATALOG_CHANGED = 'catalog:changed',
 
 
 }
