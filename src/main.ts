@@ -250,6 +250,5 @@ events.on('contacts:submit', async () => {
 
 events.on(State.CONFIRMATION_CLOSE, () => {
     modalView.closeModal();
-    console.log('Вы молодцы!');
 });
 
