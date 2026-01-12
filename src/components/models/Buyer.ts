@@ -1,5 +1,7 @@
+import { events } from "../../main";
 import { IBuyer, TPayment } from "../../types";
 import { IEvents } from "../base/Events";
+import { State } from "../../utils/constants";
 
 export class Buyer {
     //attributes
@@ -14,20 +16,26 @@ export class Buyer {
         this.phone = '';
         this.address = '';
     }
+
     //methods
     setData(data: Partial<IBuyer>): void {
         if (data.payment !== undefined) {
             this.payment = data.payment;
+           //events.emit(State.BUYER_CHANGED);
         }
         if (data.email !== undefined) {
             this.email = data.email;
+            //events.emit(State.BUYER_CHANGED);
         }
         if (data.phone !== undefined) {
             this.phone = data.phone;
+            //events.emit(State.BUYER_CHANGED);
         }
         if (data.address !== undefined) {
             this.address = data.address;
+           // events.emit(State.BUYER_CHANGED);
         }
+        events.emit(State.BUYER_CHANGED);
     }
     getData(): IBuyer {
         return {
@@ -42,7 +50,10 @@ export class Buyer {
         this.email = '';
         this.phone = '';
         this.address = '';
+        events.emit(State.BUYER_CHANGED);
     }
+
+
     validate(): Record<string, string> {
         const errors: Record<string, string> = {};
         if (!this.payment) {

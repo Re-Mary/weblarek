@@ -51,5 +51,4 @@ export class Basket {
         return this._items.some((item) => item.id === id);
     }
 
-
 }

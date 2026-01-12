@@ -4,15 +4,15 @@ import { Basket } from './components/models/Basket';
 import { Buyer } from './components/models/Buyer';
 import { Api } from './components/base/Api';
 import { ShopApi } from './components/base/ShopApi';
-import { API_URL } from './utils/constants';
+import { API_URL} from './utils/constants';
 import { EventEmitter } from './components/base/Events';
 import { State } from './utils/constants';
-import { IProduct, TPayment } from './types/index';
+import { IProduct, TPayment, IOrder } from './types/index';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { HeaderView } from './components/view/HeaderView';
 import { CardCatalogView } from './components/view/Card/CardChildren/ImageCategoryChildren/CardCatalogView';
 import { CardPreviewView } from './components/view/Card/CardChildren/ImageCategoryChildren/CardPreviewView';
-import { GalleryView} from './components/view/GalleryView';
+import { GalleryView } from './components/view/GalleryView';
 import { BasketView } from './components/view/BasketView';
 import { CardBasketView } from './components/view/Card/CardChildren/CardBasketView';
 import { ModalView } from './components/view/ModalView';
@@ -64,31 +64,19 @@ shopApi.getProducts()
     .catch((err) => console.log('Ошибка при получении данных с сервера: ', err));
 
 
-//Build order data
-function buildOrderData() {
-    return {
-        payment: buyerModel.getData().payment,
-        address: buyerModel.getData().address,
-        email: buyerModel.getData().email,
-        phone: buyerModel.getData().phone,
-        items: basketModel.getItems().map(item => item.id),
-        total: basketModel.getTotalPrice(),
-    };
-}
-
 //EVENTS --> PRESENTERS
-//CATALOG EVENTS
 
+//CATALOG EVENTS
 //Load Catalog Cards and open Preview Card
 events.on(State.CATALOG_UPDATE_SET_ITEMS, () => {
     const itemCards = productsModel.getItems().map(item => {
         const card = new CardCatalogView(cloneTemplate(teamplateCardCatalog), {
-            onClick: () => events.emit(State.CATALOG_OPEN, {id: item.id}),
+            onClick: () => events.emit(State.CATALOG_OPEN, { id: item.id }),
         });
         return card.render(item);
     });
 
-    galleryView.render( { catalog: itemCards } );
+    galleryView.render({ catalog: itemCards });
 });
 
 events.on(State.CATALOG_UPDATE_SET_SELECTED_ITEM, () => {
@@ -133,7 +121,7 @@ events.on(State.BASKET_TOGGLE_ITEM, () => {
 
 //Basket in header, open on click
 events.on(State.BASKET_OPEN, () => {
-    const basketProducts = basketModel.getCount() !== 0; 
+    const basketProducts = basketModel.getCount() !== 0;
     const basket = basketView.render();
 
     basketView.setSubmitButtonState(basketProducts);
@@ -142,7 +130,6 @@ events.on(State.BASKET_OPEN, () => {
 
 //Modal close
 events.on(State.MODAL_CLOSE, () => {
-    productsModel.resetSelectedItem();
     modalView.closeModal();
 })
 
@@ -167,7 +154,7 @@ events.on(State.BASKET_CHANGED, (data: { items: IProduct[], totalPrice: number, 
 
 //Delete Items from Basket
 events.on(State.BASKET_REMOVE, (product: { id: string }) => {
-    basketModel.removeItem(productsModel.getItemById(product.id)!);    
+    basketModel.removeItem(productsModel.getItemById(product.id)!);
 });
 
 //Order Button in BasketView
@@ -178,99 +165,113 @@ events.on(State.BASKET_ADD_ORDERED, () => {
 
 
 //FORM EVENTS
-//Order Form Submit
-events.on(State.FORM_SUBMIT, () => {
-    modalView.closeModal();
-    basketModel.clear();
-    modalView.openModal(success.render());
-})
 
 events.on(State.FORM_PAYMENT_CHANGED, (data: { payment: TPayment }) => {
     buyerModel.setData({ payment: data.payment });
-    formOrderView.togglePaymentStatus(data.payment);
 
-    const errors = buyerModel.validate();
-    const isValid = formOrderView.formValidation(errors);
-    formOrderView.setSubmitEnabled(isValid);
 });
 
 events.on(State.FORM_ADDRESS_CHANGED, (data: { address: string }) => {
     buyerModel.setData({ address: data.address });
 
-    const errors = buyerModel.validate();
-    const isValid = formOrderView.formValidation(errors);
-    formOrderView.setSubmitEnabled(isValid);
 })
 
-events.on(State.FORM_SUBMIT_ORDER, () => {
-    modalView.content = formContactView.render();
+
+events.on('order:submit', () => {
+    const contactForm = formContactView.render();
+
+
+    const { payment, address, email, phone } = buyerModel.validate();
+    const data = buyerModel.getData();
+
+
+    formOrderView.payment = data.payment;
+    formOrderView.address = data.address;
+    formOrderView.setSubmitState = !payment && !address;
+    formOrderView.formError = "";
+
+
+
+    formContactView.email = data.email;
+    formContactView.phone = data.phone;
+    formContactView.setSubmitState = !email && !phone;
+    formContactView.formError = "";
+
+
+    modalView.openModal(contactForm);
 });
 
 
-events.on(State.FORM_INPUT_FOCUS, () => {
-    formOrderView.clearErrorMessages();
-    formOrderView.toggleErrorClass(false);
-});
 
 //Contact Form Submit
-
 events.on(State.FORM_EMAIL_CHANGED, (data: { email: string }) => {
     buyerModel.setData({ email: data.email });
-
-    const errors = buyerModel.validate();
-    const isValid = formContactView.formValidation(errors);
-    formContactView.setSubmitEnabled(isValid);
 });
 
 events.on(State.FORM_PHONE_CHANGED, (data: { phone: string }) => {
     buyerModel.setData({ phone: data.phone });
-    const errors = buyerModel.validate();
-    const isValid = formContactView.formValidation(errors);
-    formContactView.setSubmitEnabled(isValid);
-});    
-
-
-//Changed data in Buyer Model - validate form
-events.on(State.BUYER_CHANGED, (data: { field: string}) => {
-    const errors = buyerModel.validate();
-    const choosenPayment = buyerModel.getData().payment;
-
-    if (data.field === 'payment' || data.field === 'address') {
-        const isValid = formOrderView.formValidation(errors);
-        formOrderView.setSubmitEnabled(isValid);
-        formOrderView.togglePaymentStatus(choosenPayment);
-    } else if (data.field === 'email' || data.field === 'phone') {
-        formContactView.formValidation(errors);
-        const isValid = !errors.email && !errors.phone;
-        formContactView.setSubmitEnabled(isValid);
-    }
 });
 
 
-events.on(State.FORM_CONTACTS_ADD, async () => {
+//Changed data in Buyer Model - validate form
+events.on(State.BUYER_CHANGED, () => {
+
+    const { payment, address, email, phone } = buyerModel.validate();
+    const data = buyerModel.getData();
+
+
+    formOrderView.payment = data.payment;
+    formOrderView.address = data.address;
+    formOrderView.setSubmitState = !payment && !address;
+    formOrderView.formError = Object.values({ payment, address })
+        .filter((i) => !!i)
+        .join('; ');
+
+
+
+    formContactView.email = data.email;
+    formContactView.phone = data.phone;
+    formContactView.setSubmitState = !email && !phone;
+    formContactView.formError = Object.values({ email, phone })
+        .filter((i) => !!i)
+        .join('; ');
+
+});
+
+
+
+events.on('contacts:submit', async () => {
     try {
-        const order = buildOrderData();
-        console.log('Sending order to server:', order);
+        const data = buyerModel.getData();
 
-        const result = await shopApi.createOrder(order);
-        console.log('Order success:', result);
+        const orderData: IOrder = {
+            payment: data.payment,
+            address: data.address,
+            email: data.email,
+            phone: data.phone,
+            items: basketModel.getItems().map(item => item.id),
+            total: basketModel.getTotalPrice(),
+        };
 
-        success.totalPrice = order.total;
+        console.log('Sending order to server:', orderData);
+        const response = await shopApi.createOrder(orderData);
 
-        basketModel.clear();
         buyerModel.clear();
+        basketModel.clear();
+
+        console.log('Order success:', response);
+        success.totalPrice = response.total;
 
         modalView.openModal(success.render());
 
     } catch (error) {
         console.error('Order failed:', error);
-    }
+    } 
+
 });
 
 
 events.on(State.CONFIRMATION_CLOSE, () => {
     modalView.closeModal();
-    formContactView.clearPhoneEmailFields();
-    formOrderView.clearAderessInput();
 });
 

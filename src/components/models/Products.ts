@@ -53,4 +53,9 @@ export class Products {
         this._selectedItem = null;
     }
 
+    clear(): void {
+        this._items = [];
+        this._selectedItem = null;
+    }
+
 }

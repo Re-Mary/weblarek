@@ -1,50 +1,43 @@
 import { IEvents } from "../../../base/Events";
-import { FormParentView, IFormValidation } from "../FormParentView";
+import { FormParentView } from "../FormParentView";
 import { State } from "../../../../utils/constants";
 import { ensureElement } from "../../../../utils/utils";
 import { TPayment } from "../../../../types";
 
-export class FormOrderView extends FormParentView {
-    private _paymentByCard: HTMLButtonElement;
-    private _cashPayment: HTMLButtonElement;
-    private _addressInput: HTMLInputElement;
+export interface IFormOrderView {
+    payment: TPayment | null;
+    address: string;
+    errors?: string;
+    stateButton?: boolean;
+}
+
+export class FormOrderView extends FormParentView<IFormOrderView> {
+    private paymentByCard: HTMLButtonElement;
+    private cashPayment: HTMLButtonElement;
+    private addressInput: HTMLInputElement;
 
     constructor(protected events: IEvents, container: HTMLElement) {
         super(events, container);
 
-        this._paymentByCard = ensureElement<HTMLButtonElement>('[name="card"]', container);
-        this._cashPayment = ensureElement<HTMLButtonElement>('[name="cash"]', container);
-        this._addressInput = ensureElement<HTMLInputElement>('[name="address"]', container);
+        this.paymentByCard = ensureElement<HTMLButtonElement>('[name="card"]', container);
+        this.cashPayment = ensureElement<HTMLButtonElement>('[name="cash"]', container);
+        this.addressInput = ensureElement<HTMLInputElement>('[name="address"]', container);
 
         //eventListner
-        this._paymentByCard.addEventListener('click', () => this.events.emit(State.FORM_PAYMENT_CHANGED, { payment: 'card' }));
-        this._cashPayment.addEventListener('click', () => this.events.emit(State.FORM_PAYMENT_CHANGED, { payment: 'cash' }));
-        this._addressInput.addEventListener('input', () => this.events.emit(State.FORM_ADDRESS_CHANGED, { address: this._addressInput.value }));
-        this._submitButton.addEventListener('click', () => this.events.emit(State.FORM_SUBMIT_ORDER));
+        this.paymentByCard.addEventListener('click', () => this.events.emit(State.FORM_PAYMENT_CHANGED, { payment: 'card' }));
+        this.cashPayment.addEventListener('click', () => this.events.emit(State.FORM_PAYMENT_CHANGED, { payment: 'cash' }));
+        this.addressInput.addEventListener('input', () => this.events.emit(State.FORM_ADDRESS_CHANGED, { address: this.addressInput.value }));
+
     }
 
-    //methods
-    formValidation(error: IFormValidation): boolean {
-        this.clearErrorMessages();
-        this.formError = error.payment || error.address || ''
-        return !error.payment && !error.address;
-    }
+    set address(value: string) {
+        this.addressInput.value = value;
+    };
 
-
-    resetForm(): void {
-        super.resetForm();
-        this.clearErrorMessages();
-        this._paymentByCard.classList.remove('button_alt-active');
-        this._cashPayment.classList.remove('button_alt-active');
-    }
-
-    togglePaymentStatus(status: TPayment): void {
-        this._paymentByCard.classList.toggle('button_alt-active', status === 'card')
-        this._cashPayment.classList.toggle('button_alt-active', status === 'cash')
-    }
+    set payment(value: TPayment) {
+        this.paymentByCard.classList.toggle('button_alt-active', value === 'card');
+        this.cashPayment.classList.toggle('button_alt-active', value === 'cash');
+    };
     
-    clearAderessInput(): void {
-        this._addressInput.value = '';
-    }
 
 }

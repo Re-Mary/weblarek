@@ -50,14 +50,14 @@ export enum State {
   FORM_SUBMIT = 'form:submit',
   FORM_EMAIL_CHANGED = 'email:changed',
   FORM_PHONE_CHANGED = 'phone:changed',
-  FORM_CONTACTS_ADD = 'contacts:add',
+  CONTACTS_SUBMIT = 'contacts:submit',
 
   //Order events
   FORM_PAYMENT_CHANGED = 'payment:changed',
   FORM_ADDRESS_CHANGED = 'address:changed',
   FORM_SUBMIT_BUTTON = 'oder:submit',
   FORM_INPUT_FOCUS = 'form:input:focus',
-  FORM_SUBMIT_ORDER = 'form:submit:order',
+  ORDER_SUBMIT = 'order:submit',
 
   //Buyer
   BUYER_CHANGED = 'buyer:change',
