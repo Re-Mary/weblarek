@@ -20,6 +20,8 @@ export class BasketView extends Component<IBasket> {
         this.basketListElement = ensureElement<HTMLUListElement>('.basket__list', container);
         this.submitButton = ensureElement<HTMLButtonElement>('.basket__button', container);
         this.totalPriceElement = ensureElement<HTMLElement>('.basket__price', container);
+        this.setSubmitButtonState(false);
+
         //eventlistner
         this.submitButton.addEventListener('click', () => this.event.emit(State.BASKET_ADD_ORDERED));
     }

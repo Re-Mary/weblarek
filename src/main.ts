@@ -121,11 +121,7 @@ events.on(State.BASKET_TOGGLE_ITEM, () => {
 
 //Basket in header, open on click
 events.on(State.BASKET_OPEN, () => {
-    const basketProducts = basketModel.getCount() !== 0;
-    const basket = basketView.render();
-
-    basketView.setSubmitButtonState(basketProducts);
-    modalView.openModal(basket);
+    modalView.openModal(basketView.render());
 })
 
 //Modal close
@@ -179,25 +175,6 @@ events.on(State.FORM_ADDRESS_CHANGED, (data: { address: string }) => {
 
 events.on('order:submit', () => {
     const contactForm = formContactView.render();
-
-
-    const { payment, address, email, phone } = buyerModel.validate();
-    const data = buyerModel.getData();
-
-
-    formOrderView.payment = data.payment;
-    formOrderView.address = data.address;
-    formOrderView.setSubmitState = !payment && !address;
-    formOrderView.formError = "";
-
-
-
-    formContactView.email = data.email;
-    formContactView.phone = data.phone;
-    formContactView.setSubmitState = !email && !phone;
-    formContactView.formError = "";
-
-
     modalView.openModal(contactForm);
 });
 
@@ -273,5 +250,6 @@ events.on('contacts:submit', async () => {
 
 events.on(State.CONFIRMATION_CLOSE, () => {
     modalView.closeModal();
+    console.log('Вы молодцы!');
 });
 
